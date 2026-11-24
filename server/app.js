@@ -7,7 +7,10 @@ import { pool as defaultPool } from './db/pool.js'
 
 export function createApp({ queue = queueService, pool = defaultPool } = {}) {
   const app = express()
-  const allowedOrigins = new Set((process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173').split(',').map((value) => value.trim()).filter(Boolean))
+  const allowedOrigins = new Set([
+    ...(process.env.FRONTEND_ORIGIN ?? 'http://localhost:5173').split(',').map((value) => value.trim()).filter(Boolean),
+    'https://salon-queue-management-1.onrender.com',
+  ])
   app.disable('x-powered-by')
   app.use(helmet())
   app.use(cors({ origin(origin, callback) { if (!origin || allowedOrigins.has(origin)) return callback(null, true); return callback(null, false) } }))

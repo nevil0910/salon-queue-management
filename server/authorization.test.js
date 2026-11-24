@@ -11,6 +11,7 @@ const accounts = {
 const calls = []
 const queue = {
   async staffFromToken(token) { return accounts[token] ?? null },
+  async publicCatalog() { return { salonId: 'elite-primary' } },
   async mutateQueue(id, action, account) { calls.push({ id, action, role: account.role }); return { ok: true } },
   async updateSettings() { calls.push({ action: 'settings' }); return { ok: true } },
 }
@@ -27,6 +28,11 @@ test('authenticated session endpoint identifies the role attached to a valid tok
   const response = await request('/api/auth/session', 'barber', 'GET')
   assert.equal(response.status, 200)
   assert.deepEqual(await response.json(), { id: 'barber-account-1', email: 'barber@example.test', role: 'BARBER', barberId: 'stylist-01' })
+})
+
+test('Render frontend origin is allowed to call the API', async () => {
+  const response = await fetch(`${base}/api/public/catalog`, { headers: { origin: 'https://salon-queue-management-1.onrender.com' } })
+  assert.equal(response.headers.get('access-control-allow-origin'), 'https://salon-queue-management-1.onrender.com')
 })
 
 test('barbers cannot enter reception or owner only queue operations', async () => {
