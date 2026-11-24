@@ -1,6 +1,9 @@
 import { ArrowUpRight, CalendarClock, CircleUserRound, ClipboardList, Command, Settings2, Scissors, TvMinimal } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useLanguage } from '../../i18n/LanguageContext.jsx'
+import { getStaffSession } from '../../lib/api.js'
+import { getStaffIdentity } from '../../lib/queueRepository.js'
 
 const customerLinks = [
   { to: '/', key: 'nav.home', icon: Command, end: true },
@@ -9,14 +12,26 @@ const customerLinks = [
 
 const staffLinks = [
   { to: '/reception', key: 'nav.reception', icon: ClipboardList },
-  { to: '/barber/stylist-01', key: 'nav.barber', icon: Scissors },
+  { to: '/barber', key: 'nav.barber', icon: Scissors },
   { to: '/admin', key: 'nav.admin', icon: Settings2 },
 ]
 
 export function Navigation({ variant = 'customer' }) {
   const { t } = useLanguage()
   const location = useLocation()
-  const links = variant === 'staff' ? staffLinks : customerLinks
+  const [role, setRole] = useState(null)
+  useEffect(() => {
+    let active = true
+    const loadRole = () => {
+      if (!getStaffSession()) { setRole(null); return }
+      getStaffIdentity().then((user) => { if (active) setRole(user.role) }).catch(() => { if (active) setRole(null) })
+    }
+    loadRole()
+    window.addEventListener('elite:staff-session-changed', loadRole)
+    return () => { active = false; window.removeEventListener('elite:staff-session-changed', loadRole) }
+  }, [location.pathname])
+  const visibleStaffLinks = role ? staffLinks.filter(({ key }) => (role === 'OWNER' && key === 'nav.admin') || (role === 'RECEPTION' && key === 'nav.reception') || (role === 'BARBER' && key === 'nav.barber')) : []
+  const links = variant === 'staff' ? visibleStaffLinks : customerLinks
   const isDisplay = location.pathname === '/display'
 
   if (isDisplay) return null

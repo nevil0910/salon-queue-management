@@ -29,6 +29,7 @@ export const translations = {
       retry: 'Try again',
       comingNext: 'A calm, considered experience is taking shape.',
     },
+    api: { requestFailed: 'The request did not reach the salon API. Check the web service connection and try again.' },
     pages: {
       home: { eyebrow: 'A NEW STANDARD IN GROOMING', title: 'The art of looking\nexceptional.', description: 'A more considered grooming experience, shaped around precision, craft, and the details that make it yours.', note: 'A refined experience, from the first hello.' },
       join: { eyebrow: 'YOUR VISIT BEGINS HERE', title: 'Join the queue', description: 'Choose your services and preferred barber, then we’ll prepare your place in line.' },
@@ -369,6 +370,7 @@ export const translations = {
       retry: 'ફરી પ્રયાસ કરો',
       comingNext: 'શાંત અને સુંદર અનુભવ આકાર લઈ રહ્યો છે.',
     },
+    api: { requestFailed: 'વિનંતી સલૂન API સુધી પહોંચી નથી. વેબ સેવા કનેક્શન તપાસીને ફરી પ્રયાસ કરો.' },
     pages: {
       home: { eyebrow: 'ગ્રૂમિંગનો નવો ધોરણ', title: 'અસાધારણ દેખાવાની\nકલા.', description: 'ચોકસાઈ, કારીગરી અને તમારી ઓળખ બનતી નાની વિગતો સાથે ઘડાયેલો વધુ વિચારપૂર્વકનો ગ્રૂમિંગ અનુભવ.', note: 'પ્રથમ અભિવાદનથી જ એક સુંદર અનુભવ.' },
       join: { eyebrow: 'તમારી મુલાકાત અહીંથી શરૂ થાય છે', title: 'કતારમાં જોડાઓ', description: 'તમારી સેવાઓ અને પસંદગીના બાર્બર પસંદ કરો, પછી અમે કતારમાં તમારું સ્થાન તૈયાર કરીશું.' },

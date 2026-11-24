@@ -2,8 +2,8 @@ const API_ROOT = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '')
 const STAFF_SESSION_KEY = 'elite.staff.session'
 
 export function getStaffSession() { return window.sessionStorage.getItem(STAFF_SESSION_KEY) }
-export function setStaffSession(token) { window.sessionStorage.setItem(STAFF_SESSION_KEY, token) }
-export function clearStaffSession() { window.sessionStorage.removeItem(STAFF_SESSION_KEY) }
+export function setStaffSession(token) { window.sessionStorage.setItem(STAFF_SESSION_KEY, token); window.dispatchEvent(new Event('elite:staff-session-changed')) }
+export function clearStaffSession() { window.sessionStorage.removeItem(STAFF_SESSION_KEY); window.dispatchEvent(new Event('elite:staff-session-changed')) }
 
 export async function api(path, options = {}) {
   const token = getStaffSession()
