@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ApplicationLayout } from './components/layout/ApplicationLayout.jsx'
 import { LoadingState } from './components/ui/LoadingState.jsx'
 import { StaffAccess } from './components/auth/StaffAccess.jsx'
@@ -41,11 +41,14 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/join" element={<JoinQueue />} />
             <Route path="/status/:id" element={<MyStatus />} />
-            <Route path="/reception" element={<StaffAccess allowedRoles={['RECEPTION']}><ReceptionDashboard /></StaffAccess>} />
-            <Route path="/barber" element={<StaffAccess allowedRoles={['BARBER']}><BarberView /></StaffAccess>} />
-            <Route path="/barber/:name" element={<StaffAccess allowedRoles={['BARBER']}><BarberView /></StaffAccess>} />
+            <Route path="/manage/receptionist" element={<StaffAccess allowedRoles={['RECEPTION']}><ReceptionDashboard /></StaffAccess>} />
+            <Route path="/manage/barber" element={<StaffAccess allowedRoles={['BARBER']}><BarberView /></StaffAccess>} />
+            <Route path="/manage/admin" element={<StaffAccess allowedRoles={['OWNER']}><OwnerSettings /></StaffAccess>} />
+            <Route path="/reception" element={<Navigate replace to="/manage/receptionist" />} />
+            <Route path="/barber" element={<Navigate replace to="/manage/barber" />} />
+            <Route path="/barber/:name" element={<Navigate replace to="/manage/barber" />} />
             <Route path="/display" element={<WaitingDisplay />} />
-            <Route path="/admin" element={<StaffAccess allowedRoles={['OWNER']}><OwnerSettings /></StaffAccess>} />
+            <Route path="/admin" element={<Navigate replace to="/manage/admin" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>

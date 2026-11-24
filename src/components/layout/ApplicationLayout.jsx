@@ -8,7 +8,7 @@ export function ApplicationLayout({ children }) {
   const location = useLocation()
   const { t } = useLanguage()
   const isDisplay = location.pathname === '/display'
-  const isStaff = ['/reception', '/barber', '/admin'].some((prefix) => location.pathname.startsWith(prefix))
+  const isStaff = location.pathname.startsWith('/manage/') || ['/reception', '/barber', '/admin'].some((prefix) => location.pathname.startsWith(prefix))
 
   if (isDisplay) return <div className="display-shell">{children}</div>
 

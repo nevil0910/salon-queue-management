@@ -11,9 +11,9 @@ const customerLinks = [
 ]
 
 const staffLinks = [
-  { to: '/reception', key: 'nav.reception', icon: ClipboardList },
-  { to: '/barber', key: 'nav.barber', icon: Scissors },
-  { to: '/admin', key: 'nav.admin', icon: Settings2 },
+  { to: '/manage/receptionist', key: 'nav.reception', icon: ClipboardList },
+  { to: '/manage/barber', key: 'nav.barber', icon: Scissors },
+  { to: '/manage/admin', key: 'nav.admin', icon: Settings2 },
 ]
 
 export function Navigation({ variant = 'customer' }) {

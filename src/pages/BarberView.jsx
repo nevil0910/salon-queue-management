@@ -31,7 +31,7 @@ export function BarberView() {
 
   const barber = useMemo(() => (dashboard?.barbers ?? []).find((item) =>
     item.id === name || slug(localized(item.name, language)) === String(name ?? '').toLocaleLowerCase(),
-  ) ?? dashboard?.barbers.find((item) => item.active), [dashboard, language, name])
+  ) ?? (dashboard?.barbers.length === 1 ? dashboard.barbers[0] : null), [dashboard, language, name])
   const activeCustomer = dashboard?.entries.find((entry) =>
     entry.assignedBarberId === barber?.id && (entry.status === 'Called' || entry.status === 'In Chair'),
   ) ?? null
