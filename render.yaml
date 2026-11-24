@@ -4,7 +4,6 @@ services:
     runtime: node
     plan: free
     buildCommand: npm ci
-    preDeployCommand: npm run db:migrate && npm run db:seed
     startCommand: npm run start:api
     healthCheckPath: /api/health
     envVars:
