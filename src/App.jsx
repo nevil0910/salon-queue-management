@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { ApplicationLayout } from './components/layout/ApplicationLayout.jsx'
 import { LoadingState } from './components/ui/LoadingState.jsx'
+import { StaffAccess } from './components/auth/StaffAccess.jsx'
 
 const BarberView = lazy(() => import('./pages/BarberView.jsx').then((module) => ({ default: module.BarberView })))
 const Home = lazy(() => import('./pages/Home.jsx').then((module) => ({ default: module.Home })))
@@ -40,10 +41,10 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/join" element={<JoinQueue />} />
             <Route path="/status/:id" element={<MyStatus />} />
-            <Route path="/reception" element={<ReceptionDashboard />} />
-            <Route path="/barber/:name" element={<BarberView />} />
+            <Route path="/reception" element={<StaffAccess><ReceptionDashboard /></StaffAccess>} />
+            <Route path="/barber/:name" element={<StaffAccess><BarberView /></StaffAccess>} />
             <Route path="/display" element={<WaitingDisplay />} />
-            <Route path="/admin" element={<OwnerSettings />} />
+            <Route path="/admin" element={<StaffAccess ownerOnly><OwnerSettings /></StaffAccess>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>

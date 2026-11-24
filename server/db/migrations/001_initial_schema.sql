@@ -6,6 +6,8 @@ CREATE TABLE salons (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 CREATE TABLE salon_settings (
   salon_id text PRIMARY KEY REFERENCES salons(id),
   settings jsonb NOT NULL DEFAULT '{}'::jsonb,

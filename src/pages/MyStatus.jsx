@@ -6,7 +6,7 @@ import { ConfirmDialog } from '../components/ui/ConfirmDialog.jsx'
 import { Card } from '../components/ui/Card.jsx'
 import { PageContainer } from '../components/layout/PageContainer.jsx'
 import { formatCount, formatDuration, formatPrice } from '../lib/formatters.js'
-import { cancelQueueRegistration, getRegistrationStatus, subscribeToQueueUpdates } from '../lib/queueRepository.js'
+import { cancelCustomerStatus, getRegistrationStatusAsync, subscribeToQueueUpdates } from '../lib/queueRepository.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 const lifecycle = ['Waiting', 'Called', 'In Chair', 'Done']
@@ -23,15 +23,14 @@ export function MyStatus() {
   const { id } = useParams()
   const { language, t } = useLanguage()
   const reduceMotion = useReducedMotion()
-  const [status, setStatus] = useState(() => getRegistrationStatus(id))
+  const [status, setStatus] = useState(null)
   const [updatedAt, setUpdatedAt] = useState(() => new Date())
   const [cancelOpen, setCancelOpen] = useState(false)
   const [errorKey, setErrorKey] = useState('')
   const [feedbackKey, setFeedbackKey] = useState('')
 
   const refresh = useCallback(() => {
-    setStatus(getRegistrationStatus(id))
-    setUpdatedAt(new Date())
+    getRegistrationStatusAsync(id).then(setStatus).catch(() => setStatus(null)).finally(() => setUpdatedAt(new Date()))
   }, [id])
 
   useEffect(() => {
@@ -43,7 +42,7 @@ export function MyStatus() {
 
   const handleCancel = useCallback(async () => {
     try {
-      await cancelQueueRegistration(id, t('status.cancelAction'), 'CUSTOMER')
+      await cancelCustomerStatus(id, t('status.cancelAction'))
       setCancelOpen(false)
       setErrorKey('')
       setFeedbackKey('status.cancelSuccess')
@@ -69,7 +68,6 @@ export function MyStatus() {
 
   return (
     <PageContainer className="inner-page inner-page--narrow status-page">
-      <div className="status-local-note"><span className="preview-notice__dot" aria-hidden="true" />{t('join.localNotice')}</div>
       <header className={`status-hero status-hero--${entry.status.toLowerCase().replace(' ', '-')}`}>
         <div className="status-hero__copy"><p className="eyebrow"><span className="eyebrow__line" aria-hidden="true" />{t('status.eyebrow')}</p><h1>{entry.customer.displayName}</h1><p>{t(statusKeys[entry.status])}</p></div>
         <motion.div className="status-token" key={entry.token} initial={reduceMotion ? false : { opacity: 0, scale: .92 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: reduceMotion ? 0 : .25 }}><span>{t('status.token')}</span><strong>{entry.token}</strong></motion.div>

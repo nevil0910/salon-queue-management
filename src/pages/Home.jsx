@@ -7,7 +7,7 @@ import { Card } from '../components/ui/Card.jsx'
 import { PageContainer } from '../components/layout/PageContainer.jsx'
 import { formatCount, formatDuration, formatPrice } from '../lib/formatters.js'
 import { getSalonSnapshot } from '../lib/salonSnapshot.js'
-import { subscribeToQueueUpdates } from '../lib/queueRepository.js'
+import { refreshPublicState, subscribeToQueueUpdates } from '../lib/queueRepository.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 const statusKeys = { OPEN: 'home.open', CLOSING_SOON: 'home.closingSoon', CLOSED: 'home.closed', OPENING_SOON: 'home.openingSoon' }
@@ -22,26 +22,21 @@ function formatHour(value, language) {
 export function Home() {
   const { language, t } = useLanguage()
   const reduceMotion = useReducedMotion()
-  const [snapshot, setSnapshot] = useState(() => getSalonSnapshot())
+  const [snapshot, setSnapshot] = useState(null)
 
   useEffect(() => {
-    const refresh = () => setSnapshot(getSalonSnapshot())
+    const refresh = () => { refreshPublicState().then(() => getSalonSnapshot()).then(setSnapshot).catch(() => {}) }
     const unsubscribe = subscribeToQueueUpdates(refresh)
     const clock = window.setInterval(refresh, 60_000)
     return () => { unsubscribe(); window.clearInterval(clock) }
   }, [])
 
+  if (!snapshot) return <PageContainer className="home-page home-page--identity"><p role="status">{t('common.loading')}</p></PageContainer>
   const statusLabel = t(statusKeys[snapshot.status])
   const services = snapshot.services.slice(0, 3)
 
   return (
     <PageContainer className="home-page home-page--identity">
-      <div className="preview-notice" role="note">
-        <span className="preview-notice__dot" aria-hidden="true" />
-        <span className="preview-notice__label">{t('home.previewLabel')}</span>
-        <span>{t('home.previewNotice')}</span>
-      </div>
-
       <section className="identity-hero" aria-labelledby="home-title">
         <div className="identity-hero__copy">
           <p className="eyebrow"><span className="eyebrow__line" aria-hidden="true" />{t('pages.home.eyebrow')}</p>

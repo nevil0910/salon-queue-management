@@ -1,8 +1,9 @@
 import { getNextCallableEntry, getOperatingStatus } from './queueEngine.js'
-import { getQueueDashboard, getSalonCatalog } from './queueRepository.js'
+import { getQueueDashboard, getSalonCatalog, getSalonSnapshot as loadSnapshot } from './queueRepository.js'
 
 export function getSalonSnapshot(now = new Date()) {
   const catalog = getSalonCatalog()
+  if (!catalog) return null
   const operating = getOperatingStatus(catalog, now)
   const dashboard = getQueueDashboard(now)
   const nextCallable = getNextCallableEntry(dashboard.entries, catalog)
@@ -18,3 +19,5 @@ export function getSalonSnapshot(now = new Date()) {
     queueEntries: dashboard.entries,
   }
 }
+
+export { loadSnapshot }

@@ -18,6 +18,8 @@ import {
   updateQueueControl,
   updateSalonHours,
   updateService,
+  refreshStaffState,
+  provisionStaffAccount,
 } from '../lib/queueRepository.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
@@ -42,41 +44,46 @@ function makeBarberDraft(barber = null) {
 export function OwnerSettings() {
   const { language, t } = useLanguage()
   const reduceMotion = useReducedMotion()
-  const [dashboard, setDashboard] = useState(() => getQueueDashboard())
+  const [dashboard, setDashboard] = useState(null)
   const [tab, setTab] = useState('services')
   const [serviceDraft, setServiceDraft] = useState(null)
   const [barberDraft, setBarberDraft] = useState(null)
   const [serviceForm, setServiceForm] = useState(null)
   const [barberForm, setBarberForm] = useState(null)
-  const [cutoff, setCutoff] = useState(dashboard.catalog.onlineCutoffMinutes ?? 30)
-  const [hoursDraft, setHoursDraft] = useState(dashboard.catalog.hours)
+  const [cutoff, setCutoff] = useState(30)
+  const [hoursDraft, setHoursDraft] = useState({})
   const [notice, setNotice] = useState('')
   const [errorKey, setErrorKey] = useState('')
   const [pendingAction, setPendingAction] = useState(null)
+  const [staffEmail, setStaffEmail] = useState('')
+  const [staffPassword, setStaffPassword] = useState('')
+  const [staffRole, setStaffRole] = useState('RECEPTION')
+  const [staffBarberId, setStaffBarberId] = useState('')
 
   const refresh = useCallback(() => {
-    const next = getQueueDashboard()
+    refreshStaffState().then((next) => {
     setDashboard(next)
     setCutoff(next.catalog.onlineCutoffMinutes ?? 30)
     setHoursDraft(next.catalog.hours)
+    }).catch(() => {})
   }, [])
   useEffect(() => {
     refresh()
     return subscribeToQueueUpdates(refresh)
   }, [refresh])
 
-  const activeServices = dashboard.catalog.services.filter((service) => service.active)
-  const activeBarbers = dashboard.barbers.filter((barber) => barber.active)
+  const activeServices = (dashboard?.catalog.services ?? []).filter((service) => service.active)
+  const activeBarbers = (dashboard?.barbers ?? []).filter((barber) => barber.active)
   const statisticItems = useMemo(() => [
-    ['admin.registrations', dashboard.statistics.registrations],
-    ['reception.done', dashboard.statistics.completed],
-    ['reception.noShow', dashboard.statistics.noShows],
-    ['reception.cancelled', dashboard.statistics.cancelled],
-    ['admin.averageWait', dashboard.statistics.averageWaitMinutes],
-    ['admin.averageService', dashboard.statistics.averageServiceMinutes],
-    ['admin.barberUtilization', dashboard.statistics.barberUtilizationPercent],
-    ['admin.peakPeriod', dashboard.statistics.peakHour],
-  ], [dashboard.statistics])
+    ['admin.registrations', dashboard?.statistics.registrations],
+    ['reception.done', dashboard?.statistics.completed],
+    ['reception.noShow', dashboard?.statistics.noShows],
+    ['reception.cancelled', dashboard?.statistics.cancelled],
+    ['admin.averageWait', dashboard?.statistics.averageWaitMinutes],
+    ['admin.averageService', dashboard?.statistics.averageServiceMinutes],
+    ['admin.barberUtilization', dashboard?.statistics.barberUtilizationPercent],
+    ['admin.peakPeriod', dashboard?.statistics.peakHour],
+  ], [dashboard])
 
   async function run(action, successKey = 'admin.saved') {
     setErrorKey('')
@@ -115,6 +122,12 @@ export function OwnerSettings() {
     await run(() => updateSalonHours(hoursDraft, cutoff))
   }
 
+  async function submitStaff(event) {
+    event.preventDefault()
+    await run(() => provisionStaffAccount({ email: staffEmail, password: staffPassword, role: staffRole, barberId: staffRole === 'BARBER' ? staffBarberId : null }), 'admin.saved')
+    setStaffEmail(''); setStaffPassword('')
+  }
+
   async function confirmDelete() {
     if (!pendingAction) return
     const action = pendingAction
@@ -122,10 +135,11 @@ export function OwnerSettings() {
     await run(action.run)
   }
 
+  if (!dashboard) return <PageContainer className="inner-page staff-page"><p role="status">{t('common.loading')}</p></PageContainer>
+
   return (
     <PageContainer className="inner-page staff-page admin-page">
       <PageHeader eyebrow="admin.eyebrow" title={t('admin.title')} description={t('admin.description')} />
-      <div className="staff-local-note"><span className="preview-notice__dot" />{t('admin.localNotice')}</div>
       <div className="admin-tabs" role="tablist" aria-label={t('admin.title')}>{tabList.map(({ id, key, icon: Icon }) => <button key={id} role="tab" aria-selected={tab === id} type="button" className={tab === id ? 'is-active' : ''} onClick={() => { setTab(id); setServiceForm(null); setBarberForm(null) }}><Icon size={15} />{t(key)}</button>)}</div>
 
       {tab === 'services' && <section className="admin-section">
@@ -166,6 +180,8 @@ export function OwnerSettings() {
       </section>}
 
       {tab === 'statistics' && <section className="admin-section"><div className="admin-section__heading"><div><p className="eyebrow">{t('admin.statistics')}</p><h2>{t('admin.todayStats')}</h2></div></div><div className="admin-stat-grid">{statisticItems.map(([key, value]) => { const isPeak = key === 'admin.peakPeriod'; const displayValue = isPeak && value !== null ? new Intl.DateTimeFormat(language === 'gu' ? 'gu-IN' : 'en-IN', { hour: 'numeric' }).format(new Date(2020, 0, 1, value)) : value === null ? '—' : formatCount(value, language); return <Card className="admin-stat-card" key={key}><span>{t(key)}</span><strong>{displayValue}{(key === 'admin.averageWait' || key === 'admin.averageService') && value !== null ? ` ${t('home.minutes')}` : key === 'admin.barberUtilization' && value !== null ? '%' : ''}</strong></Card>})}</div><Card className="admin-barber-utilization"><p className="eyebrow">{t('admin.barberUtilization')}</p>{dashboard.barbers.map((barber) => <div key={barber.id}><span>{localize(barber.name, language)}</span><strong>{t(barber.effectiveAvailability === 'AVAILABLE' ? 'barber.available' : barber.effectiveAvailability === 'ON_BREAK' ? 'barber.onBreak' : barber.effectiveAvailability === 'SERVING' ? 'barber.serving' : barber.effectiveAvailability === 'CALLED' ? 'queue.called' : 'barber.unavailable')}</strong></div>)}</Card></section>}
+
+      <section className="admin-section"><div className="admin-section__heading"><div><p className="eyebrow">{t('auth.staff')}</p><h2>{t('auth.provisionTitle')}</h2></div></div><Card className="hours-card"><form onSubmit={submitStaff} className="admin-form-grid"><label className="field"><span>{t('auth.email')}</span><input type="email" value={staffEmail} onChange={(e)=>setStaffEmail(e.target.value)} required /></label><label className="field"><span>{t('auth.password')}</span><input type="password" minLength="12" value={staffPassword} onChange={(e)=>setStaffPassword(e.target.value)} required /></label><label className="field"><span>{t('auth.role')}</span><select value={staffRole} onChange={(e)=>setStaffRole(e.target.value)}><option value="RECEPTION">{t('nav.reception')}</option><option value="BARBER">{t('nav.barber')}</option></select></label>{staffRole==='BARBER'&&<label className="field"><span>{t('admin.barbers')}</span><select required value={staffBarberId} onChange={(e)=>setStaffBarberId(e.target.value)}><option value="">—</option>{dashboard.catalog.barbers.filter((b)=>b.active).map((b)=><option key={b.id} value={b.id}>{localize(b.name,language)}</option>)}</select></label>}<button className="button button--primary" type="submit">{t('auth.provision')}</button></form></Card></section>
 
       <AnimatePresence>{(notice || errorKey) && <motion.div className={`staff-toast${errorKey ? ' staff-toast--error' : ''}`} role={errorKey ? 'alert' : 'status'} initial={reduceMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0 }}>{t(errorKey || notice)}<button type="button" onClick={() => { setErrorKey(''); setNotice('') }} aria-label={t('dialog.dismiss')}>×</button></motion.div>}</AnimatePresence>
       <ConfirmDialog open={Boolean(pendingAction)} title={pendingAction?.title ?? ''} message={pendingAction?.message ?? ''} confirmLabel={t('dialog.delete')} onConfirm={confirmDelete} onClose={() => setPendingAction(null)} />

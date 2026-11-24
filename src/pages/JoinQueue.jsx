@@ -30,14 +30,14 @@ export function JoinQueue() {
   const [registration, setRegistration] = useState(null)
   const nameInputRef = useRef(null)
   const phoneInputRef = useRef(null)
-  const [snapshot, setSnapshot] = useState(() => getSalonSnapshot())
+  const [snapshot, setSnapshot] = useState(null)
   useEffect(() => {
-    const refresh = () => setSnapshot(getSalonSnapshot())
+    const refresh = () => { import('../lib/queueRepository.js').then(({refreshPublicState})=>refreshPublicState()).then(()=>setSnapshot(getSalonSnapshot())).catch(()=>{}) }
     const unsubscribe = subscribeToQueueUpdates(refresh)
     return unsubscribe
   }, [])
-  const selectedServices = snapshot.services.filter((service) => selectedServiceIds.includes(service.id))
-  const availableBarbers = snapshot.barbers.filter((barber) => barber.active && barber.effectiveAvailability === 'AVAILABLE')
+  const selectedServices = (snapshot?.services ?? []).filter((service) => selectedServiceIds.includes(service.id))
+  const availableBarbers = (snapshot?.barbers ?? []).filter((barber) => barber.active && barber.effectiveAvailability === 'AVAILABLE')
   const duration = selectedDuration(selectedServices)
   const price = selectedPrice(selectedServices)
 
@@ -56,7 +56,8 @@ export function JoinQueue() {
     if (normalizedPhone.length < 7 || normalizedPhone.length > 15) { setErrorKey('validation.phoneInvalid'); phoneInputRef.current?.focus(); return }
     if (!selectedServiceIds.length) { setErrorKey('validation.serviceRequired'); return }
     if (!barberChoice) { setErrorKey('validation.barberRequired'); return }
-    if (!getSalonSnapshot().onlineJoiningOpen) { setErrorKey('join.onlineClosed'); return }
+    const currentSnapshot = await import('../lib/queueRepository.js').then(({refreshPublicState})=>refreshPublicState()).then(()=>getSalonSnapshot())
+    if (!currentSnapshot?.onlineJoiningOpen) { setErrorKey('join.onlineClosed'); return }
 
     setSubmitting(true)
     try {
@@ -68,7 +69,7 @@ export function JoinQueue() {
           ? { kind: 'ANY' }
           : { kind: 'SPECIFIC', barberId: barberChoice },
         language,
-        salonId: snapshot.catalog.salonId,
+        salonId: snapshot?.catalog.salonId,
       })
       setRegistration(created)
     } catch (error) {
@@ -103,7 +104,7 @@ export function JoinQueue() {
             <div><span>{t('join.duration')}</span><strong>{formatDuration(registration.services.reduce((sum, service) => sum + service.durationMinutes, 0), language, t)}</strong></div>
           </div>
           <p className="confirmation-wait">{registration.estimatedWaitingMinutes === null ? t('join.waitUnavailable') : `${t('status.estimatedWait')}: ${formatDuration(registration.estimatedWaitingMinutes, language, t)}`}</p>
-          <div className="confirmation-actions"><Button to={`/status/${registration.id}`}>{t('join.statusLink')} <ArrowRight size={15} /></Button><button className="text-button" type="button" onClick={startAnotherRegistration}>{t('join.anotherRegistration')}</button></div>
+          <div className="confirmation-actions"><Button to={`/status/${registration.statusLinkToken}`}>{t('join.statusLink')} <ArrowRight size={15} /></Button><button className="text-button" type="button" onClick={startAnotherRegistration}>{t('join.anotherRegistration')}</button></div>
         </motion.section>
       </PageContainer>
     )
@@ -112,7 +113,7 @@ export function JoinQueue() {
   return (
     <PageContainer className="join-page">
       <div className="join-heading-row"><div><p className="eyebrow"><span className="eyebrow__line" aria-hidden="true" />{t('pages.join.eyebrow')}</p><h1 className="join-title">{t('pages.join.title')}</h1><p className="join-description">{t('pages.join.description')}</p></div><Link to="/" className="back-link"><ArrowLeft size={15} aria-hidden="true" />{t('common.backHome')}</Link></div>
-      <div className="preview-notice" role="note"><span className="preview-notice__dot" aria-hidden="true" /><span className="preview-notice__label">{t('join.previewLabel')}</span><span>{t('join.localNotice')}</span></div>
+      {!snapshot && <div role="status">{t('common.loading')}</div>}
       {!snapshot.onlineJoiningOpen && <div className="form-alert" role="status">{t('join.onlineClosed')}</div>}
       <form className="join-form-layout" onSubmit={handleSubmit} noValidate>
         <div className="join-form-main">
@@ -127,7 +128,7 @@ export function JoinQueue() {
           <Card className="form-section">
             <div className="form-section__heading"><span className="form-step">02</span><div><h2>{t('join.serviceSection')}</h2><p>{t('join.serviceHint')}</p></div></div>
             <motion.div className="join-service-list" initial="hidden" animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: reduceMotion ? 0 : .06 } } }}>
-              {snapshot.services.map((service, index) => {
+              {(snapshot?.services ?? []).map((service, index) => {
                 const isSelected = selectedServiceIds.includes(service.id)
                 return <motion.button key={service.id} type="button" role="checkbox" aria-checked={isSelected} className={`join-service-option${isSelected ? ' is-selected' : ''}`} onClick={() => toggleService(service.id)} variants={{ hidden: reduceMotion ? {} : { opacity: 0, y: 8 }, show: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : .24 } } }} whileTap={reduceMotion ? undefined : { scale: .99 }}>
                   <span className="join-service-option__check">{isSelected ? <Check size={15} aria-hidden="true" /> : <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>}</span>
@@ -142,7 +143,7 @@ export function JoinQueue() {
             <div className="form-section__heading"><span className="form-step">03</span><div><h2>{t('join.barberSection')}</h2><p>{t('join.chooseBarber')}</p></div></div>
             <div className="barber-choice-list" role="radiogroup" aria-label={t('join.barberSection')}>
               <label className={`barber-choice${barberChoice === 'ANY' ? ' is-selected' : ''}`}><input type="radio" name="barber" value="ANY" checked={barberChoice === 'ANY'} onChange={() => { setBarberChoice('ANY'); setErrorKey('') }} /><span className="barber-choice__icon"><Sparkles size={17} aria-hidden="true" /></span><span className="barber-choice__copy"><strong>{t('join.anyBarber')}</strong><small>{t('join.anyBarberHint')}</small></span><span className="barber-choice__radio" /></label>
-              {snapshot.barbers.filter((barber) => barber.active).map((barber) => {
+              {(snapshot?.barbers ?? []).filter((barber) => barber.active).map((barber) => {
                 const available = barber.effectiveAvailability === 'AVAILABLE'
                 return <label key={barber.id} className={`barber-choice${barberChoice === barber.id ? ' is-selected' : ''}${!available ? ' is-unavailable' : ''}`}>
                   <input type="radio" name="barber" value={barber.id} checked={barberChoice === barber.id} onChange={() => { setBarberChoice(barber.id); setErrorKey('') }} disabled={!available} />

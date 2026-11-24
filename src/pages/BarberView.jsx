@@ -6,7 +6,7 @@ import { Card } from '../components/ui/Card.jsx'
 import { PageContainer } from '../components/layout/PageContainer.jsx'
 import { PageHeader } from '../components/layout/PageHeader.jsx'
 import { formatCount, formatDuration } from '../lib/formatters.js'
-import { completeQueueService, getNextCustomerForBarber, getQueueDashboard, setBarberAvailability, startQueueService, subscribeToQueueUpdates } from '../lib/queueRepository.js'
+import { completeQueueService, getNextCustomerForBarber, getQueueDashboard, refreshStaffState, setBarberAvailability, startQueueService, subscribeToQueueUpdates } from '../lib/queueRepository.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 function localized(value, language) { return typeof value === 'string' ? value : value?.[language] ?? '' }
@@ -16,12 +16,12 @@ export function BarberView() {
   const { name } = useParams()
   const { language, t } = useLanguage()
   const reduceMotion = useReducedMotion()
-  const [dashboard, setDashboard] = useState(() => getQueueDashboard())
+  const [dashboard, setDashboard] = useState(null)
   const [now, setNow] = useState(() => new Date())
   const [notice, setNotice] = useState('')
   const [errorKey, setErrorKey] = useState('')
 
-  const refresh = useCallback(() => { setDashboard(getQueueDashboard()); setNow(new Date()) }, [])
+  const refresh = useCallback(() => { refreshStaffState().then(setDashboard).catch(() => {}); setNow(new Date()) }, [])
   useEffect(() => {
     refresh()
     const unsubscribe = subscribeToQueueUpdates(refresh)
@@ -29,10 +29,10 @@ export function BarberView() {
     return () => { unsubscribe(); window.clearInterval(timer) }
   }, [refresh])
 
-  const barber = useMemo(() => dashboard.barbers.find((item) =>
+  const barber = useMemo(() => (dashboard?.barbers ?? []).find((item) =>
     item.id === name || slug(localized(item.name, language)) === String(name ?? '').toLocaleLowerCase(),
-  ) ?? dashboard.barbers.find((item) => item.active), [dashboard.barbers, language, name])
-  const activeCustomer = dashboard.entries.find((entry) =>
+  ) ?? dashboard?.barbers.find((item) => item.active), [dashboard, language, name])
+  const activeCustomer = dashboard?.entries.find((entry) =>
     entry.assignedBarberId === barber?.id && (entry.status === 'Called' || entry.status === 'In Chair'),
   ) ?? null
   const nextCustomer = barber ? getNextCustomerForBarber(barber.id, now) : null
@@ -49,12 +49,12 @@ export function BarberView() {
     catch (error) { setErrorKey(error?.message || 'validation.storageUnavailable') }
   }
 
+  if (!dashboard) return <PageContainer className="inner-page staff-page"><p role="status">{t('common.loading')}</p></PageContainer>
   if (!barber) return <PageContainer className="inner-page staff-page"><PageHeader eyebrow="barber.eyebrow" title={t('barber.title')} description={t('barber.noCustomer')} /></PageContainer>
 
   return (
     <PageContainer className="inner-page staff-page barber-page">
       <PageHeader eyebrow="barber.eyebrow" title={localized(barber.name, language)} description={t('barber.description')} />
-      <div className="staff-local-note"><span className="preview-notice__dot" />{t('reception.localNotice')}</div>
       <Card className="barber-control-card">
         <div className="barber-control-card__top"><div className="barber-identity"><span className="barber-identity__mark"><Scissors size={23} /></span><div><p className="eyebrow">{t('barber.availability')}</p><h2>{localized(barber.name, language)}</h2></div></div><span className={`availability-pill availability-pill--${status.toLowerCase().replace('_', '-')}`}><i />{t(status === 'AVAILABLE' ? 'barber.available' : status === 'ON_BREAK' ? 'barber.onBreak' : status === 'CALLED' ? 'queue.called' : status === 'SERVING' ? 'barber.serving' : 'barber.unavailable')}</span></div>
         <div className="barber-work-grid">

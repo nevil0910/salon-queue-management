@@ -5,7 +5,6 @@ import { useLanguage } from '../../i18n/LanguageContext.jsx'
 const customerLinks = [
   { to: '/', key: 'nav.home', icon: Command, end: true },
   { to: '/join', key: 'nav.join', icon: CalendarClock },
-  { to: '/status/foundation', key: 'nav.status', icon: CircleUserRound },
 ]
 
 const staffLinks = [

@@ -17,6 +17,7 @@ import {
   markQueueNoShow,
   registerWalkIn,
   subscribeToQueueUpdates,
+  refreshStaffState,
 } from '../lib/queueRepository.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
@@ -44,7 +45,7 @@ function formatCountdown(milliseconds, language) {
 export function ReceptionDashboard() {
   const { language, t } = useLanguage()
   const reduceMotion = useReducedMotion()
-  const [dashboard, setDashboard] = useState(() => getQueueDashboard())
+  const [dashboard, setDashboard] = useState(null)
   const [activeTab, setActiveTab] = useState('Waiting')
   const [query, setQuery] = useState('')
   const [now, setNow] = useState(() => new Date())
@@ -56,7 +57,7 @@ export function ReceptionDashboard() {
   const [errorKey, setErrorKey] = useState('')
   const [pendingAction, setPendingAction] = useState(null)
 
-  const refresh = useCallback(() => { setDashboard(getQueueDashboard()); setNow(new Date()) }, [])
+  const refresh = useCallback(() => { refreshStaffState().then(setDashboard).catch(() => {}); setNow(new Date()) }, [])
   useEffect(() => {
     refresh()
     const unsubscribe = subscribeToQueueUpdates(refresh)
@@ -65,6 +66,7 @@ export function ReceptionDashboard() {
   }, [refresh])
 
   const entriesForTab = useMemo(() => {
+    if (!dashboard) return []
     const source = activeTab === 'Waiting' ? dashboard.waiting
       : activeTab === 'Called' ? dashboard.called
         : activeTab === 'In Chair' ? dashboard.inChair : dashboard.completed
@@ -74,8 +76,8 @@ export function ReceptionDashboard() {
       .some((value) => String(value ?? '').toLocaleLowerCase().includes(normalizedQuery)))
   }, [activeTab, dashboard, query])
 
-  const blockedById = useMemo(() => new Map(dashboard.blocked.map((item) => [item.entry.id, item.reason])), [dashboard.blocked])
-  const availableBarbers = dashboard.barbers.filter((barber) => barber.effectiveAvailability === 'AVAILABLE')
+  const blockedById = useMemo(() => new Map((dashboard?.blocked ?? []).map((item) => [item.entry.id, item.reason])), [dashboard])
+  const availableBarbers = (dashboard?.barbers ?? []).filter((barber) => barber.effectiveAvailability === 'AVAILABLE')
 
   async function safelyRun(action, successKey) {
     setErrorKey('')
@@ -130,10 +132,11 @@ export function ReceptionDashboard() {
     ['reception.done', dashboard.statistics.completed, 'stat-card--copper'],
   ]
 
+  if (!dashboard) return <PageContainer className="inner-page staff-page"><p role="status">{t('common.loading')}</p></PageContainer>
+
   return (
     <PageContainer className="inner-page staff-page reception-page">
       <PageHeader eyebrow="reception.eyebrow" title={t('reception.title')} description={t('reception.description')} actions={<Button onClick={() => safelyRun(() => callNextCustomer(), 'reception.called')} disabled={!dashboard.waiting.length || !dashboard.barbers.some((barber) => barber.effectiveAvailability === 'AVAILABLE')}><ArrowRight size={15} />{t('reception.callNext')}</Button>} />
-      <div className="staff-local-note"><span className="preview-notice__dot" />{t('reception.localNotice')}</div>
       <div className="queue-stats-grid">{statItems.map(([labelKey, value, style]) => <Card className={`queue-stat-card ${style}`} key={labelKey}><span>{t(labelKey)}</span><strong>{formatCount(value, language)}</strong></Card>)}</div>
       <div className="reception-main-grid">
         <section className="reception-queue-column">
@@ -142,7 +145,7 @@ export function ReceptionDashboard() {
             <div className="queue-tabs" role="tablist" aria-label={t('reception.queue')}>{tabs.map((tab) => <button type="button" role="tab" aria-selected={activeTab === tab.id} key={tab.id} className={activeTab === tab.id ? 'is-active' : ''} onClick={() => setActiveTab(tab.id)}>{t(tab.key)}<span>{formatCount(tab.id === 'Waiting' ? dashboard.waiting.length : tab.id === 'Called' ? dashboard.called.length : tab.id === 'In Chair' ? dashboard.inChair.length : dashboard.completed.length, language)}</span></button>)}</div>
             <div className="queue-table-wrap"><table className="queue-table"><thead><tr><th>{t('reception.customer')}</th><th>{t('reception.token')}</th><th>{t('reception.services')}</th><th>{t('reception.barber')}</th><th>{t('reception.wait')}</th><th>{t('reception.actions')}</th></tr></thead><tbody>
               <AnimatePresence initial={false} mode="popLayout">{entriesForTab.map((entry) => {
-                const wait = dashboard.estimates.get(entry.id)
+                const wait = dashboard.estimates[entry.id]
                 const blockedReason = blockedById.get(entry.id)
                 const noShowRemaining = getNoShowRemainingMs(entry, now)
                 return <motion.tr key={entry.id} initial={reduceMotion ? false : { opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0 }} transition={{ duration: reduceMotion ? 0 : .18 }}>

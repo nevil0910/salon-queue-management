@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Brand } from '../components/common/Brand.jsx'
 import { LanguageSwitcher } from '../components/common/LanguageSwitcher.jsx'
 import { formatCount } from '../lib/formatters.js'
-import { getQueueDashboard, subscribeToQueueUpdates } from '../lib/queueRepository.js'
+import { getQueueDashboard, refreshPublicState, subscribeToQueueUpdates } from '../lib/queueRepository.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 function localize(value, language) { return typeof value === 'string' ? value : value?.[language] ?? '' }
@@ -12,9 +12,9 @@ function localize(value, language) { return typeof value === 'string' ? value : 
 export function WaitingDisplay() {
   const { language, t } = useLanguage()
   const reduceMotion = useReducedMotion()
-  const [dashboard, setDashboard] = useState(() => getQueueDashboard())
+  const [dashboard, setDashboard] = useState(null)
   const [now, setNow] = useState(() => new Date())
-  const refresh = useCallback(() => { setDashboard(getQueueDashboard()); setNow(new Date()) }, [])
+  const refresh = useCallback(() => { refreshPublicState().then(setDashboard).catch(() => {}); setNow(new Date()) }, [])
 
   useEffect(() => {
     refresh()
@@ -24,6 +24,7 @@ export function WaitingDisplay() {
   }, [refresh])
 
   const locale = language === 'gu' ? 'gu-IN' : 'en-IN'
+  if (!dashboard) return <main className="tv-screen tv-screen--live" role="status">{t('common.loading')}</main>
   const serving = dashboard.inChair
   const next = dashboard.waiting.slice(0, 5)
 
