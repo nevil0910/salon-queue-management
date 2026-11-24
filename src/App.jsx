@@ -41,10 +41,10 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/join" element={<JoinQueue />} />
             <Route path="/status/:id" element={<MyStatus />} />
-            <Route path="/reception" element={<StaffAccess><ReceptionDashboard /></StaffAccess>} />
-            <Route path="/barber/:name" element={<StaffAccess><BarberView /></StaffAccess>} />
+            <Route path="/reception" element={<StaffAccess allowedRoles={['OWNER', 'RECEPTION']}><ReceptionDashboard /></StaffAccess>} />
+            <Route path="/barber/:name" element={<StaffAccess allowedRoles={['OWNER', 'BARBER']} barberOnly><BarberView /></StaffAccess>} />
             <Route path="/display" element={<WaitingDisplay />} />
-            <Route path="/admin" element={<StaffAccess ownerOnly><OwnerSettings /></StaffAccess>} />
+            <Route path="/admin" element={<StaffAccess allowedRoles={['OWNER']}><OwnerSettings /></StaffAccess>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           </Suspense>

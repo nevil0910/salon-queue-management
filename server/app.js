@@ -34,6 +34,7 @@ export function createApp({ queue = queueService, pool = defaultPool } = {}) {
   }
 
   app.post('/api/auth/login', wrap((request, response) => queue.staffLogin(request.body?.email, request.body?.password).then((result) => response.json(result))))
+  app.get('/api/auth/session', auth, wrap((request) => ({ id: request.staff.id, email: request.staff.email, role: request.staff.role, barberId: request.staff.barber_id ?? null })))
   app.post('/api/auth/logout', auth, wrap((request) => queue.logout(tokenFrom(request))))
   app.get('/api/public/catalog', wrap(() => queue.publicCatalog()))
   app.get('/api/public/dashboard', wrap(() => queue.publicDashboard()))
@@ -54,8 +55,9 @@ export function createApp({ queue = queueService, pool = defaultPool } = {}) {
     if (!next.entry) throw new Error('queue.noEligibleCustomer')
     return queue.mutateQueue(next.entry.id, 'call', request.staff)
   }))
-  for (const action of ['call', 'start', 'complete', 'cancel', 'no-show']) {
-    app.post(`/api/staff/queue/:id/${action}`, auth, roles('OWNER', 'RECEPTION', 'BARBER'), wrap((request) => queue.mutateQueue(request.params.id, action, request.staff)))
+  const queueActionRoles = { call: ['OWNER', 'RECEPTION'], start: ['OWNER', 'BARBER'], complete: ['OWNER', 'BARBER'], cancel: ['OWNER', 'RECEPTION'], 'no-show': ['OWNER', 'RECEPTION'] }
+  for (const [action, allowedRoles] of Object.entries(queueActionRoles)) {
+    app.post(`/api/staff/queue/:id/${action}`, auth, roles(...allowedRoles), wrap((request) => queue.mutateQueue(request.params.id, action, request.staff)))
   }
   app.patch('/api/staff/barbers/:id', auth, roles('OWNER', 'BARBER'), wrap((request) => {
     if (request.staff.role === 'BARBER' && request.staff.barber_id !== request.params.id) throw new Error('auth.forbidden')

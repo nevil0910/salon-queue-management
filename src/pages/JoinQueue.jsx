@@ -1,13 +1,13 @@
 import { ArrowLeft, ArrowRight, Check, Clock3, Scissors, Sparkles, UserRound } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../components/ui/Button.jsx'
 import { Card } from '../components/ui/Card.jsx'
 import { PageContainer } from '../components/layout/PageContainer.jsx'
 import { formatCount, formatDuration, formatPrice } from '../lib/formatters.js'
 import { getSalonSnapshot } from '../lib/salonSnapshot.js'
-import { createQueueRegistration, subscribeToQueueUpdates } from '../lib/queueRepository.js'
+import { createQueueRegistration, refreshPublicState, subscribeToQueueUpdates } from '../lib/queueRepository.js'
 import { useLanguage } from '../i18n/LanguageContext.jsx'
 
 function selectedPrice(services) {
@@ -28,14 +28,23 @@ export function JoinQueue() {
   const [errorKey, setErrorKey] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [registration, setRegistration] = useState(null)
+  const [snapshotError, setSnapshotError] = useState(false)
   const nameInputRef = useRef(null)
   const phoneInputRef = useRef(null)
   const [snapshot, setSnapshot] = useState(null)
-  useEffect(() => {
-    const refresh = () => { import('../lib/queueRepository.js').then(({refreshPublicState})=>refreshPublicState()).then(()=>setSnapshot(getSalonSnapshot())).catch(()=>{}) }
-    const unsubscribe = subscribeToQueueUpdates(refresh)
-    return unsubscribe
+  const loadSnapshot = useCallback(async () => {
+    try {
+      await refreshPublicState()
+      setSnapshot(getSalonSnapshot())
+      setSnapshotError(false)
+    } catch {
+      setSnapshotError(true)
+    }
   }, [])
+  useEffect(() => {
+    loadSnapshot()
+    return subscribeToQueueUpdates(loadSnapshot)
+  }, [loadSnapshot])
   const selectedServices = (snapshot?.services ?? []).filter((service) => selectedServiceIds.includes(service.id))
   const availableBarbers = (snapshot?.barbers ?? []).filter((barber) => barber.active && barber.effectiveAvailability === 'AVAILABLE')
   const duration = selectedDuration(selectedServices)
@@ -56,7 +65,7 @@ export function JoinQueue() {
     if (normalizedPhone.length < 7 || normalizedPhone.length > 15) { setErrorKey('validation.phoneInvalid'); phoneInputRef.current?.focus(); return }
     if (!selectedServiceIds.length) { setErrorKey('validation.serviceRequired'); return }
     if (!barberChoice) { setErrorKey('validation.barberRequired'); return }
-    const currentSnapshot = await import('../lib/queueRepository.js').then(({refreshPublicState})=>refreshPublicState()).then(()=>getSalonSnapshot())
+    const currentSnapshot = await refreshPublicState().then(() => getSalonSnapshot())
     if (!currentSnapshot?.onlineJoiningOpen) { setErrorKey('join.onlineClosed'); return }
 
     setSubmitting(true)
@@ -110,10 +119,17 @@ export function JoinQueue() {
     )
   }
 
+  if (!snapshot) {
+    return <PageContainer className="join-page">
+      {snapshotError
+        ? <div className="form-alert" role="alert"><p>{t('common.networkError')}</p><button type="button" className="text-button" onClick={loadSnapshot}>{t('common.retry')}</button></div>
+        : <p role="status">{t('common.loading')}</p>}
+    </PageContainer>
+  }
+
   return (
     <PageContainer className="join-page">
       <div className="join-heading-row"><div><p className="eyebrow"><span className="eyebrow__line" aria-hidden="true" />{t('pages.join.eyebrow')}</p><h1 className="join-title">{t('pages.join.title')}</h1><p className="join-description">{t('pages.join.description')}</p></div><Link to="/" className="back-link"><ArrowLeft size={15} aria-hidden="true" />{t('common.backHome')}</Link></div>
-      {!snapshot && <div role="status">{t('common.loading')}</div>}
       {!snapshot.onlineJoiningOpen && <div className="form-alert" role="status">{t('join.onlineClosed')}</div>}
       <form className="join-form-layout" onSubmit={handleSubmit} noValidate>
         <div className="join-form-main">

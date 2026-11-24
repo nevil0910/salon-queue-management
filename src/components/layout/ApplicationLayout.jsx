@@ -18,7 +18,7 @@ export function ApplicationLayout({ children }) {
       <div className="ambient-glow ambient-glow--two" aria-hidden="true" />
       <header className="topbar">
         <Brand compact={false} />
-        <Navigation variant={isStaff ? 'staff' : 'customer'} />
+        {!isStaff && <Navigation variant="customer" />}
         <div className="topbar__actions"><LanguageSwitcher /></div>
       </header>
       {isStaff ? (

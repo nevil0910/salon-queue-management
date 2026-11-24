@@ -157,6 +157,15 @@ button:focus-visible, a:focus-visible { outline: 2px solid var(--gold); outline-
 .staff-content .page-container { width: auto; padding: clamp(2.7rem, 5vw, 5.5rem) 0 3rem; min-height: auto; }
 .staff-content .page-title { font-size: clamp(3.25rem, 5.2vw, 5.5rem); }
 .staff-sidebar { border-right: 1px solid var(--line); padding: 29px 22px 0 0; }
+.staff-access { width: min(100%, 520px); margin: clamp(1.5rem, 7vh, 4.5rem) auto; }
+.staff-access .surface-card { padding: clamp(24px, 4vw, 38px); }
+.staff-access .eyebrow { margin-bottom: 12px; }
+.staff-access h1 { margin: 0 0 26px; font: 400 clamp(2rem, 4vw, 2.75rem)/1.05 var(--font-display); color: var(--teal); }
+.staff-access form { display: grid; gap: 18px; }
+.staff-access .field { gap: 7px; font-size: 12px; }
+.staff-access .field input { min-height: 44px; font-size: 14px; }
+.staff-access [role="alert"] { margin: 0; color: var(--text-alert); font-size: 13px; }
+.staff-access .button { justify-self: start; min-width: 120px; }
 .staff-nav { display: flex; flex-direction: column; gap: 6px; }
 .staff-nav__label { margin: 0 0 14px 12px; font-size: 8px; }
 .staff-nav__link, .staff-nav__display { min-height: 45px; padding: 0 11px; display: flex; align-items: center; gap: 11px; color: #8c887f; border-radius: 8px; font-size: 11px; transition: background var(--transition-ui), color var(--transition-ui); }

@@ -25,6 +25,8 @@ export const translations = {
       notFoundTitle: 'This page is out of place.',
       notFoundBody: 'The address may have changed, or this page may not exist.',
       loading: 'Preparing your experience…',
+      networkError: 'Could not load live salon data. Check your connection and retry.',
+      retry: 'Try again',
       comingNext: 'A calm, considered experience is taking shape.',
     },
     pages: {
@@ -363,6 +365,8 @@ export const translations = {
       notFoundTitle: 'આ પાનું અહીં મળતું નથી.',
       notFoundBody: 'સરનામું બદલાયું હોઈ શકે છે અથવા આ પાનું અસ્તિત્વમાં નથી.',
       loading: 'તમારો અનુભવ તૈયાર થઈ રહ્યો છે…',
+      networkError: 'સેલોનની લાઇવ માહિતી લાવી શકાઈ નથી. કનેક્શન તપાસીને ફરી પ્રયાસ કરો.',
+      retry: 'ફરી પ્રયાસ કરો',
       comingNext: 'શાંત અને સુંદર અનુભવ આકાર લઈ રહ્યો છે.',
     },
     pages: {

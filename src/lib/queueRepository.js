@@ -9,7 +9,7 @@ let eventSource
 let listeners = new Set()
 
 const emit = () => { for (const listener of listeners) listener() }
-const apiRoot = import.meta.env.VITE_API_URL || ''
+const apiRoot = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '')
 
 export async function refreshPublicState() {
   const [catalog, dashboard, snapshot] = await Promise.all([
@@ -97,6 +97,7 @@ export async function updateSalonHours(hours, cutoffMinutes) { const result = aw
 export async function updateQueueControl(control, value) { const result = await api('/api/owner/settings', { method: 'PATCH', body: { queueControls: { [control]: Boolean(value) } } }); await refreshStaffState(); return result }
 
 export async function staffLogin(email, password) { const result = await api('/api/auth/login', { method: 'POST', body: { email, password } }); setStaffSession(result.token); await refreshStaffState(); return result.user }
+export async function getStaffIdentity() { return api('/api/auth/session') }
 export async function staffLogout() { try { await api('/api/auth/logout', { method: 'POST' }) } finally { clearStaffSession(); dashboardCache = catalogCache = null; emit() } }
 export async function provisionStaffAccount(account) { return api('/api/owner/staff', { method: 'POST', body: account }) }
 

@@ -78,6 +78,7 @@ export function ReceptionDashboard() {
 
   const blockedById = useMemo(() => new Map((dashboard?.blocked ?? []).map((item) => [item.entry.id, item.reason])), [dashboard])
   const availableBarbers = (dashboard?.barbers ?? []).filter((barber) => barber.effectiveAvailability === 'AVAILABLE')
+  if (!dashboard) return <PageContainer className="inner-page staff-page"><p role="status">{t('common.loading')}</p></PageContainer>
 
   async function safelyRun(action, successKey) {
     setErrorKey('')
@@ -131,8 +132,6 @@ export function ReceptionDashboard() {
     ['reception.inChair', dashboard.statistics.inChair, ''],
     ['reception.done', dashboard.statistics.completed, 'stat-card--copper'],
   ]
-
-  if (!dashboard) return <PageContainer className="inner-page staff-page"><p role="status">{t('common.loading')}</p></PageContainer>
 
   return (
     <PageContainer className="inner-page staff-page reception-page">
