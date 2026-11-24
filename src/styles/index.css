@@ -1,21 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  --color-elite-ink: #11110f;
-  --color-elite-panel: #191917;
-  --color-elite-panel-raised: #20201d;
-  --color-elite-gold: #c8aa78;
-  --color-elite-gold-light: #e2c99a;
-  --color-elite-cream: #f3eee5;
-  --color-elite-muted: #a09a8e;
+  --color-elite-teal: #102E2B;
+  --color-elite-ivory: #F3EEE4;
+  --color-elite-copper: #B97855;
+  --color-elite-jade: #2F6B5F;
+  --color-elite-graphite: #252D2A;
+  --color-elite-ink: #102E2B;
+  --color-elite-panel: #252D2A;
+  --color-elite-panel-raised: #2F6B5F;
+  --color-elite-gold: #B97855;
+  --color-elite-gold-light: #D39B7D;
+  --color-elite-cream: #F3EEE4;
+  --color-elite-muted: #66736D;
   --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
   --font-sans: "DM Sans", "Noto Sans Gujarati", Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
   font-family: var(--font-sans);
-  color: var(--color-elite-cream);
-  background: var(--color-elite-ink);
+  color: var(--color-elite-teal);
+  background: var(--color-elite-ivory);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -33,11 +38,16 @@
   --radius-control: 0.7rem;
   --shadow-card: 0 24px 70px rgb(0 0 0 / 0.22);
   --transition-ui: 180ms cubic-bezier(0.2, 0.75, 0.25, 1);
-  --line: rgb(255 255 255 / 0.09);
-  --muted: #a09a8e;
-  --gold: #c8aa78;
-  --cream: #f3eee5;
-  --panel: #191917;
+  --line: color-mix(in srgb, var(--color-elite-teal) 14%, transparent);
+  --muted: #66736d;
+  --gold: var(--color-elite-copper);
+  --cream: var(--color-elite-ivory);
+  --panel: var(--color-elite-graphite);
+  --copper: var(--color-elite-copper);
+  --teal: var(--color-elite-teal);
+  --jade: var(--color-elite-jade);
+  --ivory: var(--color-elite-ivory);
+  --graphite: var(--color-elite-graphite);
 }
 
 * { box-sizing: border-box; }

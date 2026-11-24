@@ -73,14 +73,14 @@ All interface labels must come from a centralized translation system with Englis
 
 ### Selected stack
 
-- React with TypeScript
+- React with JavaScript (ES modules)
 - Vite for the frontend build
 - Tailwind CSS for utility styling and responsive composition
 - Motion for React for interface motion and transitions
 - GSAP only for genuinely cinematic, isolated sequences such as the intro/logo reveal
 - Lucide React for consistent icons
 - A client-side router such as React Router for route-level screens and protected role areas
-- A Node.js/TypeScript backend exposed as a Render Web Service
+- A Node.js backend written in JavaScript (ES modules), exposed as a Render Web Service
 - PostgreSQL on Render as the durable shared database
 
 ### Why PostgreSQL plus an API

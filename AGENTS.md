@@ -46,6 +46,7 @@ If implementation reveals a genuine contradiction or an unresolved business deci
 
 ## Engineering and security
 
+- Use JavaScript with ES modules for the React frontend and planned Node.js backend. Do not introduce TypeScript without explicit approval.
 - Keep secrets and database credentials out of source control.
 - Validate and authorize on the backend even when the frontend already validates.
 - Avoid exposing phone numbers or sensitive customer data on the public TV screen.
@@ -77,7 +78,7 @@ Every completed task report must include:
 ## Implementation roadmap
 
 1. Confirm the open business decisions in `docs/01-brief.md` and `docs/03-flows-rules.md`.
-2. Initialize the React/Vite frontend and TypeScript backend structure without building product screens yet.
+2. Initialize the React/Vite frontend and JavaScript backend structure without building product screens yet.
 3. Establish the shared design tokens, typography, translation catalog, routing shell, auth boundary, and accessibility baseline.
 4. Design the PostgreSQL schema, migrations, seed data, queue status history, and transactional service layer.
 5. Build the API and SSE synchronization contract with focused queue-rule tests.
