@@ -1,4 +1,4 @@
-const API_ROOT = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '')
+const API_ROOT = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || 'https://salon-queue-management-w3kz.onrender.com')
 const STAFF_SESSION_KEY = 'elite.staff.session'
 
 export function getStaffSession() { return window.sessionStorage.getItem(STAFF_SESSION_KEY) }

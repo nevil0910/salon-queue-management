@@ -41,9 +41,10 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/join" element={<JoinQueue />} />
             <Route path="/status/:id" element={<MyStatus />} />
-            <Route path="/manage/receptionist" element={<StaffAccess allowedRoles={['RECEPTION']}><ReceptionDashboard /></StaffAccess>} />
-            <Route path="/manage/barber" element={<StaffAccess allowedRoles={['BARBER']}><BarberView /></StaffAccess>} />
-            <Route path="/manage/admin" element={<StaffAccess allowedRoles={['OWNER']}><OwnerSettings /></StaffAccess>} />
+            <Route path="/manage" element={<StaffAccess redirectByRole />} />
+            <Route path="/manage/receptionist" element={<StaffAccess redirectByRole><ReceptionDashboard /></StaffAccess>} />
+            <Route path="/manage/barber" element={<StaffAccess redirectByRole><BarberView /></StaffAccess>} />
+            <Route path="/manage/admin" element={<StaffAccess redirectByRole><OwnerSettings /></StaffAccess>} />
             <Route path="/reception" element={<Navigate replace to="/manage/receptionist" />} />
             <Route path="/barber" element={<Navigate replace to="/manage/barber" />} />
             <Route path="/barber/:name" element={<Navigate replace to="/manage/barber" />} />

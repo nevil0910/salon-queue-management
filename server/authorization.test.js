@@ -1,6 +1,7 @@
 import test, { after } from 'node:test'
 import assert from 'node:assert/strict'
 import { createApp } from './app.js'
+import { filterStaffDashboardForBarber } from './queueService.js'
 
 const accounts = {
   owner: { id: 'owner-1', email: 'owner@example.test', role: 'OWNER', barber_id: null, salon_id: 'elite-primary' },
@@ -50,4 +51,16 @@ test('barbers may invoke service transitions but cannot call queue entries', asy
   assert.equal((await request('/api/staff/queue/entry-1/complete', 'barber')).status, 200)
   assert.equal((await request('/api/staff/queue/entry-1/call', 'barber')).status, 403)
   assert.deepEqual(calls.map(({ action }) => action), ['start', 'complete'])
+})
+
+test('barber dashboards expose only the barber linked to the signed-in staff account', () => {
+  const dashboard = {
+    catalog: { barbers: [{ id: 'vivek' }, { id: 'other' }] },
+    barbers: [{ id: 'vivek' }, { id: 'other' }],
+    entries: [], waiting: [], called: [], inChair: [], completed: [], noShows: [], cancelled: [],
+  }
+  const result = filterStaffDashboardForBarber(dashboard, 'vivek')
+  assert.deepEqual(result.catalog.barbers.map(({ id }) => id), ['vivek'])
+  assert.deepEqual(result.barbers.map(({ id }) => id), ['vivek'])
+  assert.throws(() => filterStaffDashboardForBarber({ ...dashboard, catalog: { barbers: [{ id: 'other' }] } }, 'vivek'), /auth\.forbidden/)
 })
