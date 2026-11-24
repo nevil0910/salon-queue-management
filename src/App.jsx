@@ -1,14 +1,17 @@
+import { lazy, Suspense } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import { ApplicationLayout } from './components/layout/ApplicationLayout.jsx'
-import { BarberView } from './pages/BarberView.jsx'
-import { Home } from './pages/Home.jsx'
-import { JoinQueue } from './pages/JoinQueue.jsx'
-import { MyStatus } from './pages/MyStatus.jsx'
-import { NotFound } from './pages/NotFound.jsx'
-import { OwnerSettings } from './pages/OwnerSettings.jsx'
-import { ReceptionDashboard } from './pages/ReceptionDashboard.jsx'
-import { WaitingDisplay } from './pages/WaitingDisplay.jsx'
+import { LoadingState } from './components/ui/LoadingState.jsx'
+
+const BarberView = lazy(() => import('./pages/BarberView.jsx').then((module) => ({ default: module.BarberView })))
+const Home = lazy(() => import('./pages/Home.jsx').then((module) => ({ default: module.Home })))
+const JoinQueue = lazy(() => import('./pages/JoinQueue.jsx').then((module) => ({ default: module.JoinQueue })))
+const MyStatus = lazy(() => import('./pages/MyStatus.jsx').then((module) => ({ default: module.MyStatus })))
+const NotFound = lazy(() => import('./pages/NotFound.jsx').then((module) => ({ default: module.NotFound })))
+const OwnerSettings = lazy(() => import('./pages/OwnerSettings.jsx').then((module) => ({ default: module.OwnerSettings })))
+const ReceptionDashboard = lazy(() => import('./pages/ReceptionDashboard.jsx').then((module) => ({ default: module.ReceptionDashboard })))
+const WaitingDisplay = lazy(() => import('./pages/WaitingDisplay.jsx').then((module) => ({ default: module.WaitingDisplay })))
 
 function RouteTransition({ children }) {
   const reduceMotion = useReducedMotion()
@@ -32,6 +35,7 @@ export default function App() {
     <ApplicationLayout>
       <AnimatePresence mode="wait" initial={false}>
         <RouteTransition key={location.pathname}>
+          <Suspense fallback={<LoadingState />}>
           <Routes location={location}>
             <Route path="/" element={<Home />} />
             <Route path="/join" element={<JoinQueue />} />
@@ -42,6 +46,7 @@ export default function App() {
             <Route path="/admin" element={<OwnerSettings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </Suspense>
         </RouteTransition>
       </AnimatePresence>
     </ApplicationLayout>

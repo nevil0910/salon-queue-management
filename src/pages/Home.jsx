@@ -1,11 +1,10 @@
 import { ArrowDownRight, ArrowUpRight, Clock3, MapPin, Scissors, UsersRound } from 'lucide-react'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button } from '../components/ui/Button.jsx'
 import { Card } from '../components/ui/Card.jsx'
 import { PageContainer } from '../components/layout/PageContainer.jsx'
-import { salonPreviewCatalog } from '../data/salonPreviewCatalog.js'
 import { formatCount, formatDuration, formatPrice } from '../lib/formatters.js'
 import { getSalonSnapshot } from '../lib/salonSnapshot.js'
 import { subscribeToQueueUpdates } from '../lib/queueRepository.js'
@@ -23,10 +22,10 @@ function formatHour(value, language) {
 export function Home() {
   const { language, t } = useLanguage()
   const reduceMotion = useReducedMotion()
-  const [snapshot, setSnapshot] = useState(() => getSalonSnapshot(salonPreviewCatalog))
+  const [snapshot, setSnapshot] = useState(() => getSalonSnapshot())
 
   useEffect(() => {
-    const refresh = () => setSnapshot(getSalonSnapshot(salonPreviewCatalog))
+    const refresh = () => setSnapshot(getSalonSnapshot())
     const unsubscribe = subscribeToQueueUpdates(refresh)
     const clock = window.setInterval(refresh, 60_000)
     return () => { unsubscribe(); window.clearInterval(clock) }
@@ -71,13 +70,13 @@ export function Home() {
         </Card>
         <Card className="pulse-card">
           <p className="eyebrow">{t('home.waiting')}</p>
-          <div className="pulse-card__number"><AnimatePresence mode="popLayout" initial={false}><motion.span key={snapshot.waitingCount} initial={reduceMotion ? false : { opacity: 0, y: 9 }} animate={{ opacity: 1, y: 0 }} exit={reduceMotion ? undefined : { opacity: 0, y: -7 }} transition={{ duration: reduceMotion ? 0 : 0.22 }}>{formatCount(snapshot.waitingCount, language)}</motion.span></AnimatePresence></div>
-          <p className="pulse-card__support">{t('home.waitingCustomers')}</p><p className="pulse-card__footnote">{t('home.waitEstimate')}</p>
+          <div className="pulse-card__number"><motion.span key={snapshot.waitingCount} initial={reduceMotion ? false : { opacity: 0, y: 9 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduceMotion ? 0 : 0.22 }}>{formatCount(snapshot.waitingCount, language)}</motion.span></div>
+          <p className="pulse-card__support">{t('home.waitingCustomers')}</p><p className="pulse-card__footnote">{snapshot.nextEstimateMinutes === null ? t('home.waitEstimate') : `${t('home.nextEstimate')}: ${formatDuration(snapshot.nextEstimateMinutes, language, t)}`}</p>
         </Card>
         <Card className="pulse-card">
           <p className="eyebrow">{t('home.barbers')}</p><div className="pulse-card__number"><span>{formatCount(snapshot.availableBarbers, language)}</span><small>/{formatCount(snapshot.barbers.length, language)}</small></div>
           <p className="pulse-card__support">{t('home.availableNow')}</p>
-          <div className="barber-status-list">{snapshot.barbers.map((barber) => <span key={barber.id}><i className={`barber-status-dot barber-status-dot--${barber.availability.toLowerCase().replace('_', '-')}`} aria-hidden="true" />{typeof barber.name === 'string' ? barber.name : barber.name[language]}<small>{t(barber.availability === 'AVAILABLE' ? 'home.available' : barber.availability === 'ON_BREAK' ? 'home.onBreak' : barber.availability === 'SERVING' ? 'home.serving' : 'home.unavailable')}</small></span>)}</div>
+          <div className="barber-status-list">{snapshot.barbers.map((barber) => <span key={barber.id}><i className={`barber-status-dot barber-status-dot--${barber.effectiveAvailability.toLowerCase().replace('_', '-')}`} aria-hidden="true" />{typeof barber.name === 'string' ? barber.name : barber.name[language]}<small>{t(barber.effectiveAvailability === 'AVAILABLE' ? 'home.available' : barber.effectiveAvailability === 'ON_BREAK' ? 'home.onBreak' : barber.effectiveAvailability === 'CALLED' ? 'home.called' : barber.effectiveAvailability === 'SERVING' ? 'home.serving' : 'home.unavailable')}</small></span>)}</div>
         </Card>
       </section>
 

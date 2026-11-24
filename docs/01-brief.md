@@ -47,12 +47,12 @@ The TV display is a public read-only view. It shows serving information and toke
 
 ## Brand and visual direction
 
-The visual language is luxury, cinematic, elegant, and minimal.
+The visual language is a premium boutique grooming identity: warm, sophisticated, distinctive, and minimal.
 
-- Use a deep charcoal/near-black base with layered charcoal surfaces.
-- Use champagne gold as the principal accent for focus, active states, highlights, and key calls to action.
+- Use Deep Teal `#102E2B` as the principal dark surface and Warm Ivory `#F3EEE4` for light surfaces.
+- Use Burnished Copper `#B97855` selectively for important actions and highlights, with Jade Green `#2F6B5F` and Graphite `#252D2A` as supporting colors.
 - Pair elegant serif typography for brand and high-impact headings with a clean modern sans-serif for body text, controls, tables, and numeric data.
-- Use premium cards, subtle glass effects, refined one-pixel borders, sophisticated shadows, generous spacing, and restrained gradients.
+- Use subtle textures, premium cards, refined borders, soft shadows, generous spacing, and restrained gradients. Create clear contrast between light and dark surfaces.
 - Prefer deliberate composition and clear hierarchy over decoration.
 - Maintain readable contrast, visible keyboard focus, touch-friendly targets, and reduced-motion behavior.
 

@@ -10,7 +10,7 @@ const customerLinks = [
 
 const staffLinks = [
   { to: '/reception', key: 'nav.reception', icon: ClipboardList },
-  { to: '/barber/stylist', key: 'nav.barber', icon: Scissors },
+  { to: '/barber/stylist-01', key: 'nav.barber', icon: Scissors },
   { to: '/admin', key: 'nav.admin', icon: Settings2 },
 ]
 

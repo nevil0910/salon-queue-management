@@ -3,6 +3,8 @@ export const salonPreviewCatalog = {
   salonId: 'elite-primary',
   isPreview: true,
   timeZone: 'local',
+  onlineCutoffMinutes: 30,
+  queueControls: { onlinePaused: false, walkInsPaused: false },
   hours: Object.fromEntries(Array.from({ length: 7 }, (_, day) => [day, { opensAt: '10:00', closesAt: '22:00' }])),
   services: [
     {

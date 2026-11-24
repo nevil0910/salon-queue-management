@@ -28,7 +28,7 @@ Allowed terminal alternatives are:
 
 ## Registration rules
 
-- Online Join Queue is available only while the salon is open and until 30 minutes before the configured closing time.
+- Online Join Queue is available only while the salon is open and before the configured cutoff ahead of closing. The default cutoff is 30 minutes; the owner may adjust it in settings.
 - Walk-in registration remains available to reception while the salon can operationally accept customers, even after online joining closes.
 - A registration requires customer name, normalized phone number, at least one active service, and a barber preference.
 - Duplicate active registration is blocked when the same normalized phone number already has a non-terminal entry for the same salon/day. The error must point the customer/receptionist to the existing status where safe.
@@ -153,7 +153,7 @@ Customers can cancel only while Waiting. Reception/owner may cancel according to
 | T07 | Customer cancels while Waiting | Entry becomes Cancelled, leaves active position calculations, and cannot be called. |
 | T08 | Reception attempts no-show before 10 minutes | Action remains disabled/rejected using server time. |
 | T09 | Reception marks no-show after 10 minutes | Entry becomes No-show; returning customer must receive a new end-of-queue token. |
-| T10 | Online join at/after closing-minus-30-minutes | Online registration is rejected with the correct message; walk-in workflow remains available if salon policy permits. |
+| T10 | Online join at/after the configured closing cutoff (30 minutes by default) | Online registration is rejected with the correct message; walk-in workflow remains available if the salon is open and walk-ins are not paused. |
 | T11 | Barber starts a break while free | Barber becomes unavailable for assignment; reception and estimates update. |
 | T12 | SSE disconnects and reconnects | Screen shows reconnecting state, refetches authoritative data, and does not lose queue changes. |
 | T13 | TV receives a queue update | Now Serving/next five update, with no private customer information exposed. |

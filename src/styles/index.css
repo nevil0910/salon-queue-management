@@ -12,7 +12,7 @@
   --color-elite-gold: #B97855;
   --color-elite-gold-light: #D39B7D;
   --color-elite-cream: #F3EEE4;
-  --color-elite-muted: #66736D;
+  --color-elite-muted: #53665F;
   --font-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
   --font-sans: "DM Sans", "Noto Sans Gujarati", Inter, ui-sans-serif, system-ui, sans-serif;
 }
@@ -39,7 +39,7 @@
   --shadow-card: 0 24px 70px rgb(0 0 0 / 0.22);
   --transition-ui: 180ms cubic-bezier(0.2, 0.75, 0.25, 1);
   --line: color-mix(in srgb, var(--color-elite-teal) 14%, transparent);
-  --muted: #66736d;
+  --muted: #53665f;
   --gold: var(--color-elite-copper);
   --cream: var(--color-elite-ivory);
   --panel: var(--color-elite-graphite);

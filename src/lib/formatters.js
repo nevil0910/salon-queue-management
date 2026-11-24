@@ -13,6 +13,7 @@ export function formatDuration(minutes, language, translate) {
   const parts = []
   if (hours) parts.push(`${number.format(hours)} ${translate(hours === 1 ? 'join.hour' : 'join.hours')}`)
   if (remainingMinutes) parts.push(`${number.format(remainingMinutes)} ${translate('home.minutes')}`)
+  if (!parts.length) parts.push(`${number.format(0)} ${translate('home.minutes')}`)
   return parts.join(' ')
 }
 

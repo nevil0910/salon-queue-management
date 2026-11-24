@@ -22,7 +22,7 @@ If implementation reveals a genuine contradiction or an unresolved business deci
 
 ## Product and design consistency
 
-- Maintain the ELITE identity: deep charcoal, champagne gold, elegant serif headings, clean sans-serif interface text, premium surfaces, restrained borders, refined shadows, and generous spacing.
+- Maintain the ELITE identity: Deep Teal `#102E2B`, Warm Ivory `#F3EEE4`, selective Burnished Copper `#B97855`, Jade Green `#2F6B5F`, and Graphite `#252D2A`; use elegant serif headings, clean sans-serif interface text, premium surfaces, restrained borders, soft shadows, and generous spacing.
 - Prefer a reusable design system and shared components over one-off screen styling.
 - Design customer screens mobile-first, staff screens for tablet/desktop, and the TV screen for large landscape viewing distance.
 - Keep English and Gujarati supported through the centralized translation system. Never hardcode user-facing labels in screen components.
@@ -39,6 +39,7 @@ If implementation reveals a genuine contradiction or an unresolved business deci
 - A barber can serve only one customer at a time.
 - Preserve the documented lifecycle: Waiting → Called → In Chair → Done, with explicit Cancelled and No-show terminal paths.
 - Enforce the 10-minute Called-to-No-show cutoff using server time and salon timezone.
+- Enforce the owner-configured online-joining cutoff (30 minutes before closing by default); walk-ins remain a separate intake path while open.
 - A returning no-show customer gets a new registration and new token at the end.
 - Prevent duplicate active registrations using normalized phone numbers.
 - Revalidate every mutation transactionally so stale screens cannot overwrite newer queue state.
